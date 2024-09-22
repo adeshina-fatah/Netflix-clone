@@ -1,9 +1,10 @@
-name: Build and Deploy
+name: Build
 
 on:
   push:
     branches:
       - main
+
 
 jobs:
   build:
@@ -12,32 +13,32 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Disable shallow clones for better analysis
-
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v1.3  # Use stable version
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      - name: Install Trivy
+
+      - name: install trivy
         run: |
+          #install trivy
           sudo apt-get install wget apt-transport-https gnupg lsb-release -y
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
           echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install trivy -y
+          #command to scan files
           trivy fs .
-
       - name: Docker build and push
         run: |
-          docker build --build-arg TMDB_V3_API_KEY=05065cb5e79e57ff40ecd34792c2dc6b -t adeshina100/netflix .
-          docker tag adeshina100/netflix:latest adeshina100/netflix:latest
+          #run commands to build and push docker images
+          docker build --build-arg TMDB_V3_API_KEY=05065cb5e79e57ff40ecd34792c2dc6b -t netflix .
+          docker tag netflix adeshina100/netflix:latest
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker push adeshina100/netflix:latest
         env:
           DOCKER_CLI_ACI: 1
-
   deploy:
     name: Deploy
     needs: build  # Ensure consistency with job names
