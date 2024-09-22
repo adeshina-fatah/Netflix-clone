@@ -18,12 +18,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
       - name: install trivy
         run: |
@@ -42,6 +37,6 @@ jobs:
           docker build --build-arg TMDB_V3_API_KEY=05065cb5e79e57ff40ecd34792c2dc6b -t netflix .
           docker tag netflix adeshina100/netflix:latest
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push sevenajay/netflix:latest
+          docker push adeshina100/netflix:latest
         env:
           DOCKER_CLI_ACI: 1
