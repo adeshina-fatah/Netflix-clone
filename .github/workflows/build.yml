@@ -47,6 +47,12 @@ jobs:
       - name: Pull the docker image
         run: docker pull adeshina100/netflix:latest
       - name: Trivy image scan
-        run: trivy image adeshina100/netflix:latest
+        run: |
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+          trivy image adeshina100/netflix:latest
       - name: Run the container netflix
         run: docker run -d --name netflix -p 8081:80 adeshina100/netflix:latest
