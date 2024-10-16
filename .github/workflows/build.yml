@@ -17,7 +17,7 @@ jobs:
       - name: Docker build and push
         run: |
           #run commands to build and push docker images
-          docker build --build-arg TMDB_V3_API_KEY=05065cb5e79e57ff40ecd34792c2dc6b -t netflix .
+          docker build --build-arg TMDB_V3_API_KEY=${{ secrets.TMDB_V3_API_KEY }} -t netflix .
           docker tag netflix adeshina100/netflix:latest
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker push adeshina100/netflix:latest
@@ -43,3 +43,13 @@ jobs:
           sudo apt-get install trivy -y
           #command to scan files
           trivy fs .
+  deploy:
+    needs: Build
+    runs-on: [aws-netflix]
+    steps:
+      - name: Pull the docker image
+        run: docker pull adeshina100/netflix:latest
+      - name: Trivy image scan
+        run: trivy image adeshina100/netflix:latest
+      - name: Run the container netflix
+        run: docker run -d --name netflix -p 8081:80 adeshina100/netflix:latest
